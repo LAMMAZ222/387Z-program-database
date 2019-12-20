@@ -1,2 +1,348 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       main.cpp                                                  */
+/*    Author:       VEX                                                       */
+/*    Created:      Thu Sep 26 2019                                           */
+/*    Description:  Competition Template                                      */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
 
-s
+#include "vex.h"
+
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Ldrive               motor         15              
+// Rdrive               motor         16              
+// Controller1          controller                    
+// Lintake              motor         14              
+// Rintake              motor         4               
+// Llift                motor         17              
+// Rlift                motor         7               
+// Ltower               motor         18              
+// Rtower               motor         8               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+
+using namespace vex;
+
+//1150 - 1275
+
+
+int liftdown = 0;
+int liftup = 0;
+int towerdown = 0;
+int towerup = 0;
+int liftspeed = 20;
+int Aswitch = 0;
+
+competition Competition;
+
+vex::motor_group Drive (Ldrive, Rdrive);
+vex::motor_group Intake (Lintake, Rintake);
+vex::motor_group Lift (Llift, Rlift);
+vex::motor_group Tower (Ltower, Rtower);
+
+void minmax(vex::motor_group &motorname, int max, int min)
+{
+  if(motorname.rotation(deg) <= min - 1)
+  {
+    motorname.rotateTo(min, deg);
+  }
+  if(motorname.rotation(deg) >= max + 1) 
+  {
+    motorname.rotateTo(max, deg);
+  }
+}
+
+void control (vex::controller::button &buttona, vex::controller::button &buttonb, int speed, vex::motor_group &motorg){
+    if(buttona.pressing())
+  {
+    motorg.spin(fwd, speed, pct);
+  }
+  else if (buttonb.pressing()) 
+  {
+    motorg.spin(fwd, -speed, pct);
+  }
+  else 
+  {
+    motorg.stop();
+  }
+
+}
+
+void controlslow (vex::controller::button &buttonf, vex::controller::button &buttonr, vex::controller::button &buttonslow, int speed, vex::motor_group &motorgroup, int slowspeed){
+
+  if(buttonf.pressing() && !buttonslow.pressing())
+  {
+    motorgroup.spin(fwd, speed, pct);
+  }
+  else if (buttonr.pressing() && !buttonslow.pressing()) 
+  {
+    motorgroup.spin(fwd, -speed, pct);
+  }
+  else if (buttonf.pressing() && buttonslow.pressing())
+  {
+    motorgroup.spin(fwd, slowspeed, pct);
+  }
+  else if (buttonr.pressing() && buttonslow.pressing()) 
+  {
+    motorgroup.spin(fwd, -slowspeed, pct);
+  }
+  else 
+  {
+    motorgroup.stop();
+  }
+
+}
+
+
+
+
+void pre_auton(void) {
+  
+  vexcodeInit();
+  Tower.resetRotation();
+  Intake.resetRotation();
+  Drive.resetRotation();
+
+  
+//Lift Encoder Check PRE_AUTON
+/*  Lift.spin(fwd, 40, pct);
+  wait(450, msec);
+  Lift.spin(reverse, 25, pct);
+  waitUntil(Lift.power() >= 2.3);
+  Lift.stop();
+  wait(500, msec);
+  Lift.resetRotation();
+  Controller1.rumble(rumbleLong);*/
+
+
+
+}
+
+void autonomous(void) {
+
+//1 CUBE AUTO
+/*Ldrive.spin(fwd, 70, pct);
+Rdrive.spin(fwd, 65, pct);
+wait(1100, msec);
+Ldrive.spin(reverse, 65, pct);
+Rdrive.spin(reverse, 70, pct);
+wait(600, msec);
+Drive.stop();*/
+
+  Lift.spin(fwd, 40, pct);
+  wait(450, msec);
+  Lift.spin(reverse, 25, pct);
+  waitUntil(Lift.power() >= 2.3);
+  Lift.stop();
+  wait(500, msec);
+  Lift.resetRotation();
+  Controller1.rumble(rumbleLong);
+  Aswitch = 1;
+
+waitUntil(Aswitch >= 1);
+wait(800, msec);
+
+Ldrive.spin(fwd, 60, pct);
+Rdrive.spin(fwd, 70, pct);
+wait(1100, msec);
+Ldrive.spin(reverse, 70, pct);
+Rdrive.spin(reverse, 65, pct);
+wait(600, msec);
+Drive.stop();
+
+
+//SETUP AUTO
+/*Tower.setVelocity(100, pct);
+Intake.setVelocity(100, pct);
+Drive.setVelocity(50, pct);
+Drive.rotateFor(fwd, 80, deg);
+Tower.rotateFor(fwd, 400, deg);*/
+
+
+//TESTING AUTO
+/*wait(8000, msec);
+Lift.rotateTo(1275, deg, 40);*/
+
+}
+
+void usercontrol(void) {
+
+//AUTO CODE
+
+/*//drive forward and pick up cubes
+Drive.setVelocity(55, pct);
+Intake.spin(fwd, 100, pct);
+Drive.rotateFor(750, degrees);
+task::sleep(700);
+//head back, moves a little less for turning room
+Intake.stop();
+Drive.rotateFor(-860, degrees);
+//Turn
+Ldrive.startRotateFor(-280, degrees); 
+Rdrive.startRotateFor(280, degrees);
+task::sleep(800);
+//move towards scoring zone
+Drive.setVelocity(45, pct);
+Drive.rotateFor(300, degrees);
+//score and back away
+Drive.setVelocity(10, pct);
+Lift.rotateFor(1300, deg);
+Lift.rotateFor(-1300, deg);
+Intake.spin(reverse, 10, pct);
+Drive.rotateFor(-250, deg);
+Intake.stop();*/
+
+
+/*Tower.rotateFor(fwd, 375, deg);
+wait(500, msec);
+Tower.rotateFor(fwd, 70, deg);
+Intake.rotateFor(reverse, 260, deg);
+wait(500, msec);
+Tower.rotateFor(-60, deg);*/  
+
+
+
+
+
+
+  
+  while (1) {
+  Ldrive.setVelocity((Controller1.Axis3.position() - -Controller1.Axis1.position() * 4/5), pct);
+  Rdrive.setVelocity((Controller1.Axis3.position() - Controller1.Axis1.position() * 4/5), pct);
+
+  Tower.setStopping(hold);
+  Intake.setStopping(hold);
+  Lift.setStopping(hold);
+
+  Brain.Screen.print("Lift encoder value %f", Lift.rotation(deg));
+  Brain.Screen.newLine();
+  Brain.Screen.print("Lift Voltage Draw: %f", Lift.power());
+  Brain.Screen.newLine();
+  Brain.Screen.print("OM lift encoder value %f", Tower.rotation(deg));
+  Brain.Screen.newLine();
+  Brain.Screen.print("OM lift Voltage Draw: %f", Tower.power());
+  Brain.Screen.setCursor(1, 1);
+
+ /* if(Tower.rotation(deg) >= 200)
+  {
+   Lift.rotateTo(640, deg, 55);
+  }*/
+  
+  
+  
+ /* if(Lift.rotation(deg) <= -6000 )
+  {
+    liftdown = 1;
+  }
+  else {
+  liftdown = 0;
+  }
+  if(Lift.rotation(deg) >= 2075) 
+  {
+   liftup = 1; 
+  }
+  else {
+  liftup = 0;
+  }*/
+
+   /* if(Tower.rotation(deg) <= 20 )
+  {
+    towerdown = 1;
+  }
+  else {
+  towerdown = 0;
+  }
+  if(Tower.rotation(deg) >= 1000) 
+  {
+   towerup = 1; 
+  }
+  else {
+  towerup = 0;
+  }*/
+
+
+
+
+
+  
+Ldrive.spin(fwd);
+Rdrive.spin(fwd);
+
+
+
+ 
+ 
+  if(Controller1.ButtonL1.pressing() && !Controller1.ButtonA.pressing())
+  {
+    Intake.spin(fwd, 100, pct);
+  }
+  else if (Controller1.ButtonL2.pressing() && !Controller1.ButtonA.pressing()) 
+  {
+    Intake.spin(fwd, -100, pct);
+  }
+  else if (Controller1.ButtonL1.pressing() && Controller1.ButtonA.pressing())
+  {
+    Intake.spin(fwd, 40, pct);
+  }
+  else if (Controller1.ButtonL2.pressing() && Controller1.ButtonA.pressing()) 
+  {
+    Intake.spin(fwd, -40, pct);
+  }
+  else 
+  {
+    Intake.stop();
+  }
+
+  if(Controller1.ButtonR1.pressing() && towerup == 0)
+  {
+    Tower.spin(fwd, 45, pct);
+  }
+  else if (Controller1.ButtonR2.pressing() && towerdown == 0) 
+  {
+    Tower.spin(fwd, -45, pct);
+  }
+  else 
+  {
+    Tower.stop();
+  }
+
+  if(Controller1.ButtonUp.pressing() && liftup == 0)
+  {
+    Lift.spin(fwd, liftspeed, pct);
+    if(Lift.rotation(deg) >= 1160)
+    {
+    Controller1.rumble(rumbleShort);
+    liftspeed = 8;
+    }
+  }
+  else if (Controller1.ButtonDown.pressing() && liftdown == 0) 
+  {
+    Lift.spin(fwd, -55, pct);
+  }
+  else 
+  {
+    Lift.stop();
+    liftspeed = 30;
+  }
+
+  
+  
+   wait(20, msec);                 
+  }
+}
+
+
+int main() {
+  
+  Competition.autonomous(autonomous);
+  Competition.drivercontrol(usercontrol);
+
+ 
+  pre_auton();
+
+  while (true) {
+    wait(100, msec);
+  }
+}
