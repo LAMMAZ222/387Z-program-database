@@ -10,3 +10,7 @@ Now for the "Current Version Code". You'll find this and with it you should see 
 If you have any more questions, just @ me on discord!
 
 -Lammaz
+
+
+
+also, if you can edit this please put your name under this sentence
