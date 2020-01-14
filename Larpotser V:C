@@ -1,0 +1,100 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       main.cpp                                                  */
+/*    Author:       VEX                                                       */
+/*    Created:      Thu Sep 26 2019                                           */
+/*    Description:  Competition Template                                      */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
+#include "vex.h"
+
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// FLw                  motor         1               
+// FRw                  motor         2               
+// BLw                  motor         3               
+// BRw                  motor         4               
+// Controller1          controller                    
+// Lom                  motor         5               
+// Rom                  motor         6               
+// TA                   motor         7               
+// OA                   motor         8               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+
+using namespace vex;
+
+brain  Brain;
+
+// VEXcode device constructors
+motor FLw = motor(PORT11, ratio18_1, false);
+motor FRw = motor(PORT20, ratio18_1, true);
+motor BLw = motor(PORT13, ratio18_1, true);
+motor BRw = motor(PORT19, ratio18_1, true);
+controller Controller1 = controller(primary);
+motor Lom = motor(PORT17, ratio18_1, true);
+motor Rom = motor(PORT14, ratio18_1, false);
+motor TA = motor(PORT18, ratio18_1, false);
+motor OA = motor(PORT12, ratio18_1, false);
+
+competition Competition;
+
+vex::motor_group Ldrive (FLw, BLw);
+vex::motor_group Rdrive (FRw, BRw);
+vex::motor_group Drive  (FLw, FRw, BLw, BRw);
+vex::motor_group OM     (Lom, Rom);
+
+
+void pre_auton(void) {
+
+  vexcodeInit();
+
+}
+
+void autonomous(void) {
+
+Drive.spin(fwd, 80, pct);
+wait(2300, msec);
+Drive.spin(fwd, -100, pct);
+wait(1200, msec);
+Drive.stop();
+
+
+}
+
+
+void usercontrol(void) {
+  
+  while (1) {
+   
+   
+  Ldrive.spin(fwd, Controller1.Axis3.position() - -Controller1.Axis1.position(), pct); //Left and right joystick movement
+  Rdrive.spin(fwd, Controller1.Axis3.position() - Controller1.Axis1.position(), pct);
+
+
+  if(Controller1.ButtonL1.pressing()){ OA.spin(fwd, 50, pct); } else if (Controller1.ButtonL2.pressing()) { OA.spin(fwd, -50, pct); } else { OA.stop(); } //OM actuator control
+  if(Controller1.ButtonR1.pressing()){ OM.spin(fwd, 100, pct);} else if (Controller1.ButtonR2.pressing()) { OM.spin(fwd,  -50, pct);} else { OM.stop(); } //OM control
+  if(Controller1.ButtonUp.pressing()){ TA.spin(fwd, 35, pct); } else if (Controller1.ButtonDown.pressing()){TA.spin(fwd,  -60, pct);} else { TA.stop(); } //Tray actuator control                 
+  
+
+
+
+
+    wait(20, msec); 
+  }
+}
+
+
+int main() {
+
+  Competition.autonomous(autonomous);
+  Competition.drivercontrol(usercontrol);
+
+  
+  pre_auton();
+
+  while (true) {
+    wait(100, msec);
+  }
+}
