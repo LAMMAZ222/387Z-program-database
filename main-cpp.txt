@@ -1,0 +1,252 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       main.cpp                                                  */
+/*    Author:       VEX                                                       */
+/*    Created:      Thu Sep 26 2019                                           */
+/*    Description:  Competition Template                                      */
+/*    Date Printed: 2/27/2020                                                 */
+/*    Changes: More refined comments and optimized space                      */
+/*                                                                            */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
+#include "vex.h"
+
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// FLw                  motor         1
+// FRw                  motor         2
+// BLw                  motor         3
+// BRw                  motor         4
+// Controller1          controller
+// Lom                  motor         5
+// Rom                  motor         6
+// TA                   motor         7
+// OA                   motor         8
+// ---- END VEXCODE CONFIGURED DEVICES ----
+
+using namespace vex;
+
+/*brain  Brain;
+
+// VEXcode device constructors
+motor FLw = motor(PORT11, ratio18_1, false);  
+motor FRw = motor(PORT20, ratio18_1, true);
+motor BLw = motor(PORT13, ratio18_1, true);
+motor BRw = motor(PORT19, ratio18_1, true);
+controller Controller1 = controller(primary);
+motor Lom = motor(PORT17, ratio18_1, true);
+motor Rom = motor(PORT14, ratio18_1, false);
+motor TA = motor(PORT18, ratio18_1, false);
+motor OA = motor(PORT12, ratio18_1, false);*/
+
+
+//WEEEEEEEEEEEE means that there's a note there, something that i don't want to commit to right now or just can't implement yet but that i should
+//              remember that it is something, it's just a note and just don't be offput by a random WEEEEEEEEEEEEEEEEEEEE
+
+
+
+//General Notes (notes that aren't tied to a specific part of code)
+
+//Cube un-jammer. A quick button press that quickly ejects a cube, moves forward slightly, and re-intakes it. A way to save time if the cubes get stuck
+// possible problems could be, it might just slow it down, it could do nothing to un-jam the cube as it could eject it and immediatley intake it in the same
+// position
+
+
+
+
+
+competition Competition;
+
+// Variables
+
+int autoarmcheck = 1;  // Enabler/Disabler for automatic tray movement when arms move
+int TAspeed = 0; // Tray speed, Used for automatic tray slowing
+int OMspeed = 100;  // OM speed variable, used for OM slow-mode
+int atraycheck = 0; // Check for automatic tray
+int towerheight = 0; // Towerheight variable, changes Arms height depending on variable
+
+// Defining Motor Groups
+
+vex::motor_group Ldrive(FLw, BLw);
+vex::motor_group Rdrive(FRw, BRw);
+vex::motor_group Drive(FLw, FRw, BLw, BRw);
+vex::motor_group OM(Lom, Rom);
+vex::motor_group ALL(Lom, Rom, FLw, BLw, FRw, FLw, TA, OA);
+
+
+void towermove() {            // Automatic arms/OA movement function
+  if (towerheight == 0) {     // checks the Variable
+    OA.startRotateTo(0, deg); // movement of OA according to variable
+  } else if (towerheight == 1) {
+    OA.startRotateTo(820, deg); // small tower height  
+  } else if (towerheight == 2) {                             //WEEEEEEEEEEE oh hey, here's one now! A lot has been changed with the OM's recently mainly with
+    OA.startRotateTo(1100, deg); // medium tower height                     the angle and strength, it changed quite a bit with the values so my last obtained
+  }                                                          //             data is incorrect and i have to change those values back there.
+}
+
+void pre_auton(void) { vexcodeInit(); } //Initalization, required for code to work, not sure why, HAS to be included
+
+void autonomous(void) {  //Autonomus
+ 
+  /*TA.spin(fwd, -30, pct); //Tray and OA strain to get power
+  OA.spin(fwd, -30, pct);
+  waitUntil(TA.power() >= 3.3);
+  waitUntil(OA.power() >= 2.2); //power check for OA and tray         //Startup
+  Calibration, currently unused Controller1.rumble(rumbleLong); //ending signal
+  ALL.stop(); //stop all motors
+  wait(1500, msec);*/ //wait before auto
+  Controller1.rumble(rumbleLong); // Just a check for auto
+
+  ALL.resetPosition();
+  FLw.spin(fwd, -60, pct); // 1 Point Auto
+  FRw.spin(fwd, 60, pct);
+  BLw.spin(fwd, -60, pct); // moves forward for 1.2 seconds
+  BRw.spin(fwd, 60, pct);
+  wait(1200, msec);
+  FLw.spin(fwd, 80, pct);
+  FRw.spin(fwd, -80, pct); // moves backwards for 0.6 seconds
+  BLw.spin(fwd, 80, pct);
+  BRw.spin(fwd, -80, pct);
+  wait(600, msec);
+  Drive.stop();
+  wait(1000, msec);       // waiting for robot to settle
+  OM.spin(fwd, -60, pct); // Startup sequence to flip out tray and OM's
+  wait(1500, msec);       // keeps OM's spinning for 1.5 seconds
+  OM.stop();              // OM stopping
+}
+
+void usercontrol(void) {  // User Control segment
+
+  while (1) {  //Sets up an infinite loop
+
+    OM.setStopping(hold);
+    Drive.setStopping(coast);
+    OA.setStopping(hold);
+    TA.setStopping(hold); // Brake Type Setting, hold causes motors to hold their movement when they reach a stop
+                          // Coast allows the motor's to be affected from other sources besides the code, like gravity
+
+    // Brain Screen Printing of some values
+    Brain.Screen.print("Tray encoder value %f", TA.rotation(deg)); // Tray rotation printing
+    Brain.Screen.newLine();               // Moves to the next line
+    Brain.Screen.print("Tray Voltage Draw: %f", TA.power()); // Tray Voltage printing
+    Brain.Screen.newLine();
+    Brain.Screen.print("OM lift encoder value %f", OA.rotation(deg)); // OA/arms rotation printing
+    Brain.Screen.newLine(); 
+    Brain.Screen.print("OM lift Voltage Draw: %f",OA.power()); // OA/arms voltage printing
+    Brain.Screen.newLine();
+    Brain.Screen.print("OA temp: %f:", OA.temperature(fahrenheit));  //OA Temperature printing
+    Brain.Screen.newLine();
+    Brain.Screen.print("OM temp: %f:", OM.temperature(fahrenheit));  //OM temperature printing
+    Brain.Screen.setCursor(1, 1);   // Prinitng Reset
+
+
+    // Sets the wheels to move with the joysticks, i need a seperate one for each wheel due to the way the gears were setup making each one require unique values
+
+    if (Controller1.ButtonB.pressing()) { // Button Check for slow mode, makes driving slower if button B is pressing
+      FLw.setVelocity(-Controller1.Axis3.position() * 1 / 8 - Controller1.Axis1.position() * 1 / 6, pct); 
+      FRw.setVelocity(Controller1.Axis3.position() * 1 / 8 - Controller1.Axis1.position() * 1 / 6, pct);  // Slower drive control, setting the speed, not telling the motor's to move yet
+      BLw.setVelocity(-Controller1.Axis3.position() * 1 / 8 - -Controller1.Axis1.position() * 1 / 6, pct);
+      BRw.setVelocity(Controller1.Axis3.position() * 1 / 8 - -Controller1.Axis1.position() * 1 / 6, pct);
+    } else {
+      FLw.setVelocity(-Controller1.Axis3.position() * 2 / 3 - Controller1.Axis1.position() * 2 / 4, pct); // Normal drive Control, it's still setting the speed here
+      FRw.setVelocity(Controller1.Axis3.position() * 2 / 3 - Controller1.Axis1.position() * 2 / 4, pct);
+      BLw.setVelocity(-Controller1.Axis3.position() * 2 / 3 - -Controller1.Axis1.position() * 2 / 4, pct);
+      BRw.setVelocity(Controller1.Axis3.position() * 2 / 3 - -Controller1.Axis1.position() * 2 / 4, pct);
+    }
+
+    Ldrive.spin(fwd); // makes the previously set speed actually move the motors
+    Rdrive.spin(fwd);
+
+
+    //I condensed these 3 basic motor control commands all into 1 line each, it saves space and makes my code a lot cleaner
+    // Though it may be a little hard to sort through
+
+    // Button 1 check                     Moves Motor if check is true      Button 2 check                      Moves motor opposite way    Stops motor at default                              
+    //----------------------------------  --------------------------  ----------------------------------------  -------------------------   ----------------------------------------------
+    if (Controller1.ButtonL1.pressing()) { OA.spin(fwd, 100, pct); } else if (Controller1.ButtonL2.pressing()) { OA.spin(fwd, -100, pct); } else { OA.stop(); } // OM actuator control
+    if (Controller1.ButtonUp.pressing()) { TA.spin(fwd, TAspeed, pct); } else if (Controller1.ButtonDown.pressing()) { TA.spin(fwd, -100, pct); } else if (atraycheck != 1) { TA.stop(); } // Tray actuator control
+    if (Controller1.ButtonR1.pressing()) { OM.spin(fwd, OMspeed, pct); }  else if (Controller1.ButtonR2.pressing()) { OM.spin(fwd, -OMspeed, pct); } else { OM.stop(); } // OM control
+
+
+    //OM Slow Mode Button check
+    if (Controller1.ButtonA.pressing()) { //Button check
+      OMspeed = 40; //Sets OM speed to a slower value
+    } 
+    else { 
+      OMspeed = 100; //Sets default speed if button A isn't being pushed
+    } 
+
+    // Automatic Tray movement enabler/disabler, May want to shut down once the automatic feature is nice and consistent
+    if (Controller1.ButtonX.pressing() && autoarmcheck == 0) { //Button and variable check
+      autoarmcheck = 1; //variable change, used to determine whether this mode is active or not
+      wait(400, msec); //A quick wait to prepare everything before it continues
+    } else if (Controller1.ButtonX.pressing() && autoarmcheck == 1) { //Button and variable check
+      autoarmcheck = 0; //Variable change
+      Controller1.rumble(rumbleShort); //A notification to tell the user that they entered no-auto motor
+      wait(400, msec); // Another wait
+    } 
+
+    /*if (Controller1.Axis2.position() >= 85 &&
+        Controller1.Axis1.position() >= 90 &&
+        Controller1.Axis1.position() <= -90 &&
+        towerheight != 2) { // Automatic tower height, up   // An automatic OA movement to move the OM's to the tower heights
+      towerheight += 1;     // variable change              // WEEEEE currently not working, probably due to having the input be
+      towermove();          // function call                   joystick inputs, should look into it further once we have open buttons
+    } else if (Controller1.Axis2.position() <= -85 &&          
+               Controller1.Axis1.position() >= 90 &&
+               Controller1.Axis1.position() <= -90 &&
+               towerheight != 0) { // Automatic tower height, down
+      towerheight -= 1;            // variable change
+      towermove();                 // function call
+    }*/
+
+    if (Controller1.ButtonLeft.pressing()) { // Automatic tray reset
+      TA.setVelocity(100, pct);              // speed set
+      TA.startRotateTo(-100, deg);           // Tray movement
+      atraycheck = 1;  // Variable change, will help check something in a moment
+      wait(200, msec); // wait to give it some time before the program checks if
+                       // the button is pressing agian
+    } else if (Controller1.ButtonLeft.pressing() && TA.rotation(deg) >= 0) { // Automatic Tray reset Cancel, uses previous variable to see if the tray is automatically resetting
+      TA.stop(); // S T O P   M O V E M E N T
+    }
+    if (TA.rotation(deg) <= -30 && atraycheck == 1) { // Variable reset to show that the tray has reached it's destination
+      atraycheck = 0; // variable reset
+    }
+
+    else if (TA.position(deg) >= 1800) // Automatic Tray slow-down
+    {
+      TAspeed = 60; // tray speed slow down is stored in a variable
+      if (Controller1.ButtonUp.pressing()) {
+        Controller1.rumble(rumbleShort); // A signal to show you that the tray is getting close to stacking heights
+      }            //WEEEEEEEEEEEEE I might want to investigate more layers of slowness to get a faster, smoother, stacking maneuver. This could
+    }                               //be done through just adding more of the current ones with it getting slower for each one, or i could
+    else {                          // probably get some sort of algorithm to remove clutter from the code and just make it smoother in general
+      TAspeed = 100; // Tray speed default
+    }
+
+    // Automatic Tray movement
+    if (autoarmcheck >= 1) // variable check
+    {
+      if (Controller1.ButtonL1.pressing() && TA.rotation(deg) <= 1800) // Second check to see Tray location, if it's far back enough, it'll move forward with the arms
+      {
+        TA.spin(fwd, 39, pct); // TA moves forward until it reaches ^ that height
+      }         //                                                  |
+    }                    //WEEEEEEEEEEEE We got a new design for the robot which changes 2 things 
+                         //               1) The tray rotation values have been changed, so it'd have to be tweaked
+    wait(20, msec);      //               2) The tray barely has to be moved for the arms to move up so this feature might be unneeded 
+  }                      //              So i should either remove this feature OR make it smoother and better, there's some equation algorithm which
+}                        //              should work with enough testing but i feel like it should just be removed.
+
+int main() {
+
+  Competition.autonomous(autonomous);
+  Competition.drivercontrol(usercontrol);
+
+  pre_auton();
+
+  while (true) {
+    wait(100, msec);
+  }
+}
