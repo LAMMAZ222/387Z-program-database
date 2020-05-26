@@ -14,3 +14,4 @@ If you have any more questions, just @ me on discord (soon to be ms teams)!
 
 
 also, if you can edit this please put your name under this sentence
+Timothy
