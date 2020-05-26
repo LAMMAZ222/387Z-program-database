@@ -7,7 +7,7 @@ The "Framework" will have the needed files for actually running the program, it'
 
 Now for the "Current Version Code". You'll find this and with it you should see older versions, unless we need those, just ignore them, for current version you'll see a large block of code, copy and paste this into vexcode (there should be a few names on the left side of your screen, one of which is main.cpp, you want to paste the code here)
 
-If you have any more questions, just @ me on discord!
+If you have any more questions, just @ me on discord (soon to be ms teams)!
 
 -Lammaz
 
